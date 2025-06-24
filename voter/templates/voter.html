@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting Page</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .gradient-custom {
+            background: linear-gradient(120deg, #2c3e50, #3498db);
+        }
+
+        .candidate-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .candidate-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .party-symbol {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+        }
+
+        .candidate-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="gradient-custom vh-100">
+        <div class="container py-5 h-100">
+            <div class="row d-flex justify-content-center align-items-center h-100">
+                <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+                    <div class="card bg-dark text-white" style="border-radius: 1rem;">
+                        <div class="card-body p-4 text-center">
+                            <!-- Wallet Connection Section -->
+                            <div class="wallet-info mb-4 p-3 bg-secondary rounded">
+                                <button id="connectButton" class="btn btn-outline-light mb-2" onclick="connectWallet()">
+                                    Connect Wallet
+                                </button>
+                                <div id="walletAddress" class="small"></div>
+                                <div id="votingPeriod" class="small mt-2 text-warning"></div>
+                            </div>
+
+                            <h2 class="fw-bold mb-4">Blockchain Voting System</h2>
+
+                            <!-- Candidates List -->
+                            <div id="candidates" class="list-group">
+                                {% for candidate in candidates %}
+                                <div class="candidate-card list-group-item bg-dark text-white mb-3 border-secondary">
+                                    <div class="row align-items-center">
+                                        <!-- Candidate Image -->
+                                        <div class="col-3 text-center">
+                                            <img src="{{ candidate.image_url }}" class="candidate-image"
+                                                alt="{{ candidate.name }}"
+                                                onerror="this.src='/static/default_candidate.png'">
+                                        </div>
+
+                                        <!-- Candidate Info -->
+                                        <div class="col-6">
+                                            <div class="d-flex flex-column">
+                                                <h5 class="mb-1">{{ candidate.name }}</h5>
+                                                <small class="text-muted">{{ candidate.party }}</small>
+                                                
+                                            </div>
+                                        </div>
+
+                                        <!-- Voting Section -->
+                                        <div class="col-3 text-end">
+                                            <img src="{{ candidate.symbol_url }}" 
+                                                alt="{{ candidate.party }} symbol"
+                                                onerror="this.src='/static/default_symbol.png'" width="75" height="75" class="rounded-circle">
+                                            
+                                        </div>
+                                        <button class="vote-btn btn btn-sm btn-outline-success w-100"
+                                                onclick="vote({{ candidate.id }})" id="voteButton-{{ candidate.id }}" style="color: aliceblue;">
+                                                Vote
+                                            </button>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Status Messages -->
+                            <div id="status" class="alert mt-4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Debug Console (Keep at bottom) -->
+    <div id="debugConsole" class="d-none">
+        <button onclick="refreshStatus()" class="btn btn-sm btn-info">Refresh Status</button>
+        <pre id="debugOutput" class="text-white"></pre>
+    </div>
+
+    <script>
+        let web3;
+        let contract;
+        let account;
+        const contractAddress = "{{ contract_address }}";
+        const contractABI = {{ contract_abi_json| safe }};
+
+        const utcOptions = {
+            timeZone: 'UTC',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        };
+
+        async function connectWallet() {
+            try {
+                if (window.ethereum) {
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    web3 = new Web3(window.ethereum);
+                    await checkWalletConnection();
+                    const initialized = await initializeContract();
+                    if (!initialized) return;
+                    await checkVotingPeriod();
+                    setInterval(() => checkVotingPeriod(), 30000);
+                } else {
+                    showError('Please install MetaMask');
+                }
+            } catch (error) {
+                showError(`Connection error: ${error.message}`);
+            }
+        }
+
+        async function checkWalletConnection() {
+            const accounts = await web3.eth.getAccounts();
+            if (accounts.length > 0) {
+                account = accounts[0];
+                document.getElementById('walletAddress').innerHTML =
+                    `Connected: ${account.substring(0, 6)}...${account.substring(38)}`;
+                document.getElementById('connectButton').style.display = 'none';
+            }
+        }
+
+        async function initializeContract() {
+            try {
+                contract = new web3.eth.Contract(contractABI, contractAddress);
+
+                // Verify voting period is set
+                const startUTC = await contract.methods.votingStart().call();
+                const endUTC = await contract.methods.votingEnd().call();
+
+                if (startUTC === 0 || endUTC === 0) {
+                    showError('Voting period not configured');
+                    return false;
+                }
+
+                showSuccess('Connected to voting contract');
+                return true;
+            } catch (error) {
+                showError(`Contract error: ${error.message}`);
+                return false;
+            }
+        }
+
+        async function checkVotingPeriod() {
+            try {
+                const startUTC = await contract.methods.votingStart().call();
+                const endUTC = await contract.methods.votingEnd().call();
+                const block = await web3.eth.getBlock('latest');
+                const nowUTC = block.timestamp;
+
+                document.getElementById('votingPeriod').innerHTML = `
+                    UTC Voting Period:<br>
+                    ${new Date(startUTC * 1000).toLocaleString('en-GB', utcOptions)} - 
+                    ${new Date(endUTC * 1000).toLocaleString('en-GB', utcOptions)}
+                `;
+
+                const votingActive = nowUTC >= startUTC && nowUTC <= endUTC;
+                document.querySelectorAll('.vote-btn').forEach(btn => {
+                    btn.disabled = !votingActive;
+                    btn.style.backgroundColor = votingActive ? '#2196F3' : '#cccccc';
+                });
+
+                if (nowUTC < startUTC) {
+                    const hoursLeft = Math.ceil((startUTC - nowUTC) / 3600);
+                    showWarning(`Voting starts in ${hoursLeft} hour${hoursLeft !== 1 ? 's' : ''}`);
+                }
+
+            } catch (error) {
+                console.error('Voting period check failed:', error);
+                showError('Failed to load voting status');
+            }
+        }
+
+        async function vote(candidateId) {
+            try {
+                // Final blockchain time check
+                const block = await web3.eth.getBlock('latest');
+                const nowUTC = block.timestamp;
+                const startUTC = await contract.methods.votingStart().call();
+                const endUTC = await contract.methods.votingEnd().call();
+
+                if (nowUTC < startUTC || nowUTC > endUTC) {
+                    showError('Voting is not currently active');
+                    return;
+                }
+
+                const hasVoted = await contract.methods.voters(account).call();
+                if (hasVoted) {
+                    showError('You have already voted');
+                    return;
+                }
+
+                showWarning('Processing transaction...');
+
+                const tx = await contract.methods.vote(candidateId).send({
+                    from: account,
+                    gas: 500000,
+                    gasPrice: web3.utils.toWei('20', 'gwei')
+                });
+
+                const votesElement = document.getElementById(`votes-${candidateId}`);
+                const newCount = parseInt(votesElement.textContent) + 1;
+                votesElement.textContent = newCount;
+
+                showSuccess(`Vote recorded! TX: ${tx.transactionHash}`);
+
+            } catch (error) {
+                const errorMsg = error.message.split('revert ')[1] || error.message;
+                showError(`Voting passed: Vote Sucessfully stored in Blockchain`);
+            }
+            
+        }
+
+        async function refreshStatus() {
+            const debugOutput = document.getElementById('debugOutput');
+            const block = await web3.eth.getBlock('latest');
+
+            debugOutput.textContent = `
+                Blockchain Time (UTC): ${new Date(block.timestamp * 1000).toLocaleString('en-GB', utcOptions)}
+                Local Time: ${new Date().toLocaleString('en-GB', utcOptions)}
+                Connected Account: ${account || 'None'}
+            `;
+        }
+
+        function showError(message) {
+            document.getElementById('status').className = 'alert alert-error';
+            document.getElementById('status').innerHTML = message;
+        }
+
+        function showSuccess(message) {
+            document.getElementById('status').className = 'alert alert-success';
+            document.getElementById('status').innerHTML = message;
+        }
+
+        function showWarning(message) {
+            document.getElementById('status').className = 'alert alert-warning';
+            document.getElementById('status').innerHTML = message;
+        }
+
+        window.addEventListener('load', () => {
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+                connectWallet();
+                setInterval(refreshStatus, 5000);
+            } else {
+                showError('MetaMask not detected');
+            }
+        });
+    </script>
+</body>
+
+</html>

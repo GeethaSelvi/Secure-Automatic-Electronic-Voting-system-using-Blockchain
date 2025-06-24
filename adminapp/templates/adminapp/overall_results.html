@@ -1,0 +1,158 @@
+{% extends "base1.html" %}
+{% block content %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Admin Portal</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'candidate_list' %}">Candidates</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'voter_list' %}">Voters</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'schedule_list' %}">Election Schedule</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'overall_results' %}">Overall Results</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'admin_logout' %}">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Election Results Summary</h4>
+                </div>
+
+                <!-- Schedule Table -->
+                <div class="card-body">
+                    <h5 class="card-subtitle mb-4 text-muted">Election Schedule</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Election Name</th>
+                                    <th>Date</th>
+                                    <th>Region</th>
+                                    <th>State</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in schedule %}
+                                <tr>
+                                    <td>{{ event.election_name }}</td>
+                                    <td>{{ event.election_date|date:"M d, Y" }}</td>
+                                    <td>{{ event.region|default:"-" }}</td>
+                                    <td>{{ event.state }}</td>
+                                    <td class="text-truncate" style="max-width: 200px;">{{ event.description }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Candidate Results -->
+                <div class="card-body pt-0">
+                    <h5 class="card-subtitle mb-4 text-muted">Candidate Results</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 10%">Image</th>
+                                    <th style="width: 10%">Symbol</th>
+                                    <th style="width: 25%">Candidate</th>
+                                    <th style="width: 25%">Party</th>
+                                    <th style="width: 30%">Vote Progress</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                
+                                {% for candidate in candidates %}
+                                <tr>
+                                    <td class="text-center">
+                                        <img src="{{ candidate.image.url }}" class="rounded-circle"
+                                            onerror="this.src='/static/default_candidate.png'" width="80" height="75">
+                                    </td>
+                                    <td class="text-center">
+                                        <img src="{{ candidate.symbol_image.url }}" class="rounded-circle"
+                                            onerror="this.src='/static/default_symbol.png'" width="60" height="50">
+                                    </td>
+                                    <td>{{ candidate.name }}</td>
+                                    <td>{{ candidate.party_name }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1" style="height: 25px;">
+                                                <div class="progress-bar bg-success" role="progressbar"
+                                                    style="width: {% widthratio candidate.votes 100 100 %}%"
+                                                    aria-valuenow="{{ candidate.votes }}" aria-valuemin="0"
+                                                    aria-valuemax="100">
+                                                    {{ candidate.votes }} votes
+                                                </div>
+                                            </div>
+                                            <span class="badge bg-primary ms-3">{{ candidate.votes }}</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                      
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .candidate-img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border: 2px solid #dee2e6;
+    }
+
+    .symbol-img {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+    }
+
+    .progress {
+        border-radius: 20px;
+        overflow: visible;
+    }
+
+    .progress-bar {
+        border-radius: 20px;
+        position: relative;
+        overflow: visible;
+    }
+
+    .progress-bar::after {
+        content: attr(aria-valuenow);
+        position: absolute;
+        right: 10px;
+        color: white;
+        font-weight: bold;
+        text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+    }
+</style>
+{% endblock %}

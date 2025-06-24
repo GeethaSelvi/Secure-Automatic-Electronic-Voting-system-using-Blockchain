@@ -1,0 +1,39 @@
+Pillow
+django-anymail
+django-simple-captcha
+web3
+python-dotenv
+sib-api-v3-sdk
+npm insatll truffle@latest
+
+commands:
+pip install -r rq.txt
+py -3 -m venv vo//venv
+>include
+>lib
+>Sripts
+>py.env
+django admin startproject voting
+>__init__.py
+>settings.py
+>urls.py
+>asgi.py
+>wsgi.py
+python manage.py startapp adminapp
+>admin.py
+>apps.py
+>forms.py
+>models.py
+>tests.py
+>views.py
+python manage.py startapp voter
+python manage.py makemigrations
+db.sqlite3
+migrationspy
+python manage.py migrate
+truffle  init
+buils
+contracts
+migrations
+package.json
+nodemodulus

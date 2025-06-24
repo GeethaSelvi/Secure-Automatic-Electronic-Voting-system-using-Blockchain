@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="vh-100 gradient-custom">
+    <div class="container py-5 h-100">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+                <div class="card bg-dark text-white" style="border-radius: 1rem;">
+                    <div class="card-body p-5 text-center">
+                        <div class="mb-md-5 mt-md-4 pb-5">
+                            <h2 class="fw-bold mb-4 text-uppercase">Sign Up</h2>
+                            <p class="text-white-50 mb-5">Please fill in the details to register!</p>
+
+                            <!-- Signup Form -->
+                            <form method="post">
+                                {% csrf_token %}
+                                <!-- Name -->
+                                <div class="form-outline form-white mb-4">
+                                    <input type="text" id="name" name="name" class="form-control form-control-lg" required />
+                                    <label class="form-label" for="name">Name</label>
+                                </div>
+                                <!-- Date of Birth -->
+                                <div class="form-outline form-white mb-4">
+                                    <input type="date" id="date_of_birth" name="date_of_birth" class="form-control form-control-lg" required />
+                                    <label class="form-label" for="date_of_birth">Date of Birth</label>
+                                </div>
+                                <!-- Mobile Number -->
+                                <div class="form-outline form-white mb-4">
+                                    <input type="text" id="mobile_number" name="mobile_number" class="form-control form-control-lg" required />
+                                    <label class="form-label" for="mobile_number">Mobile Number</label>
+                                </div>
+                                <!-- Email -->
+                                <div class="form-outline form-white mb-4">
+                                    <input type="email" id="email" name="email" class="form-control form-control-lg" required />
+                                    <label class="form-label" for="email">Email</label>
+                                </div>
+                                <!-- Address -->
+                                <div class="form-outline form-white mb-4">
+                                    <textarea id="address" name="address" class="form-control form-control-lg" required></textarea>
+                                    <label class="form-label" for="address">Address</label>
+                                </div>
+                                <!-- Pincode -->
+                                <div class="form-outline form-white mb-4">
+                                    <input type="text" id="pincode" name="pincode" class="form-control form-control-lg" required />
+                                    <label class="form-label" for="pincode">Pincode</label>
+                                </div>
+                                <!-- Region -->
+                                <div class="form-outline form-white mb-4">
+                                    <input type="text" id="region" name="region" class="form-control form-control-lg" required />
+                                    <label class="form-label" for="region">Region</label>
+                                </div>
+                                <!-- State -->
+                                <div class="form-outline form-white mb-4">
+                                    <input type="text" id="state" name="state" class="form-control form-control-lg" required />
+                                    <label class="form-label" for="state">State</label>
+                                </div>
+                                <!-- District -->
+                                <div class="form-outline form-white mb-4">
+                                    <input type="text" id="district" name="district" class="form-control form-control-lg" required />
+                                    <label class="form-label" for="district">District</label>
+                                </div>
+                                <!-- Current Place -->
+                                <div class="form-outline form-white mb-4">
+                                    <input type="text" id="current_place" name="current_place" class="form-control form-control-lg" required />
+                                    <label class="form-label" for="current_place">Current Place</label>
+                                </div>
+                                <!-- Submit Button -->
+                                <button class="btn btn-outline-light btn-lg px-5" type="submit">Sign Up</button>
+                            </form>
+                        </div>
+                        <div>
+                            <p class="mb-0">Already have an account? <a href="{% url 'voter_signin' %}" class="text-white-50 fw-bold">Signin</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

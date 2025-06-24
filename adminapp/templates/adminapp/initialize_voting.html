@@ -1,0 +1,14 @@
+{% extends 'adminapp/base.html' %}
+{% block content %}
+<h2>Set Voting Period</h2>
+<form method="post">
+    {% csrf_token %}
+    <label>Start Time:
+        <input type="datetime-local" name="start_time" required>
+    </label>
+    <label>End Time:
+        <input type="datetime-local" name="end_time" required>
+    </label>
+    <button type="submit">Initialize Voting Period</button>
+</form>
+{% endblock %}

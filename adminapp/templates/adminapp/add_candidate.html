@@ -1,0 +1,216 @@
+{% extends "base1.html" %}
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 3rem auto;
+        padding: 2.5rem;
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    
+    .form-title {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 2rem;
+        font-weight: 700;
+        font-size: 2rem;
+    }
+    
+    .form-section {
+        margin-bottom: 2.5rem;
+        padding: 1.75rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+    }
+    
+    .section-title {
+        color: #34495e;
+        font-size: 1.35rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+    
+    .form-label {
+        display: block;
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 0.875rem 1.25rem;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: #ffffff;
+    }
+    
+    .form-control:focus {
+        border-color: #6c757d;
+        box-shadow: 0 0 0 3px rgba(108,117,125,0.15);
+        outline: none;
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.75rem;
+        align-items: start;
+    }
+    
+    .image-upload-group {
+        text-align: center;
+        padding: 1.5rem;
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        background: #ffffff;
+        transition: border-color 0.3s ease;
+    }
+    
+    .image-upload-group:hover {
+        border-color: #6c757d;
+    }
+    
+    .image-preview {
+        width: 160px;
+        height: 160px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-top: 1rem;
+        border: 2px solid #e9ecef;
+    }
+    
+    .btn-submit {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1.05rem;
+        font-weight: 600;
+        background: #2c3e50;
+        border: none;
+        border-radius: 6px;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-submit:hover {
+        background: #1a252f;
+        transform: translateY(-1px);
+    }
+    
+    @media (max-width: 768px) {
+        .form-container {
+            margin: 1.5rem;
+            padding: 1.5rem;
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+        }
+    }
+</style>
+
+<div class="form-container">
+    <h1 class="form-title">Add New Candidate</h1>
+    
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <!-- Personal Information Section -->
+        <div class="form-section">
+            <h3 class="section-title">Personal Details</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    {{ form.name }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Date of Birth</label>
+                    {{ form.date_of_birth }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Party Information Section -->
+        <div class="form-section">
+            <h3 class="section-title">Party Information</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Party Name</label>
+                    {{ form.party_name }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Location Information Section -->
+        <div class="form-section">
+            <h3 class="section-title">Location Details</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">State</label>
+                    {{ form.state }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">District</label>
+                    {{ form.district }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Region</label>
+                    {{ form.region }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Election Place</label>
+                    {{ form.election_place }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Pincode</label>
+                    {{ form.pincode }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Image Upload Section -->
+        <div class="form-section">
+            <h3 class="section">Candidate Images</h3>
+            <div class="form-row">
+                <div class="image-upload-group">
+                    <div class="form-group">
+                        <label class="form-label">Candidate Profile Image</label>
+                        {{ form.image }}
+                    </div>
+                    {% if form.instance.image %}
+                        <img src="{{ form.instance.image.url }}" class="image-preview" alt="Current profile">
+                    {% endif %}
+                </div>
+                
+                <div class="image-upload-group">
+                    <div class="form-group">
+                        <label class="form-label">Party Symbol</label>
+                        {{ form.symbol_image }}
+                    </div>
+                    {% if form.instance.symbol_image %}
+                        <img src="{{ form.instance.symbol_image.url }}" class="image-preview" alt="Party symbol">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn-submit">Add Candidate</button>
+    </form>
+</div>
+{% endblock %}
