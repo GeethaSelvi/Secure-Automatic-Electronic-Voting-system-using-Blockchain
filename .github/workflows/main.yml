@@ -1,0 +1,19 @@
+
+---
+
+## 🔧 How to Run the Project (Local Setup)
+
+```bash
+# Clone the repo
+git clone https://github.com/GeethaSelvi/Secure-Automatic-Electronic-Voting-system-using-Blockchain.git
+cd Secure-Automatic-Electronic-Voting-system-using-Blockchain
+
+# Create virtual environment
+python -m venv venv
+venv\Scripts\activate   # On Windows
+
+# Install required packages
+pip install -r requirements.txt
+
+# Run Django server
+python manage.py runserver
